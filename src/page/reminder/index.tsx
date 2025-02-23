@@ -1,5 +1,6 @@
-import { Plus } from 'lucide-react';
+import { CircleChevronLeft, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 
@@ -19,6 +20,11 @@ export default function ReminderPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reminders, setReminders] = useState<Reminder[]>([]);
     const [editingReminder, setEditingReminder] = useState<Reminder | null>(null);
+    const navigate = useNavigate();
+
+    const handleBackButton = () => {
+        navigate(-1);
+    };
 
     const handleAddReminder = (reminder: Omit<Reminder, 'id'>) => {
         const newReminder = { ...reminder, id: Date.now().toString() };
@@ -47,6 +53,14 @@ export default function ReminderPage() {
                 <div className="max-w-4xl mx-auto p-4">
                     <main className="min-h-screen p-4">
                         <div className="max-w-4xl mx-auto">
+                            <Button
+                                className="md:mr-5 mb-5 bg-teal-500 hover:bg-teal-600"
+                                size="sm"
+                                onClick={handleBackButton}
+                            >
+                                <CircleChevronLeft />
+                                Back
+                            </Button>
                             <div className="flex justify-between items-center mb-6">
                                 <h1 className="max-sm:text-lg text-2xl font-bold text-teal-700">My Reminders</h1>
                                 <Button
