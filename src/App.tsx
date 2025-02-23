@@ -1,9 +1,9 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
+import AppointmentPage from '@/page/appointment';
 import LoginPage from '@/page/login';
+import ReminderPage from '@/page/reminder';
 import UserDashboard from '@/page/user_dashboard';
-
-import ReminderPage from './page/reminder';
 
 function App() {
     const router = createBrowserRouter([
@@ -16,7 +16,11 @@ function App() {
             element: <UserDashboard />,
         },
         {
-            path: '/user-reminder',
+            path: '/appointment',
+            element: <AppointmentPage />,
+        },
+        {
+            path: '/reminders',
             element: <ReminderPage />,
         },
     ]);
