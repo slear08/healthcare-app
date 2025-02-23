@@ -1,9 +1,14 @@
 import { Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function LoginPage() {
+    const navigate = useNavigate();
+    const hanldeLoginButton = () => {
+        navigate('user-dashboard');
+    };
     return (
         <main className="flex min-h-screen items-center justify-center p-4 bg-teal-50 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-32 h-32 bg-teal-100 rounded-full -translate-x-1/2 -translate-y-1/2" />
@@ -25,7 +30,10 @@ export default function LoginPage() {
                         <p className="text-center text-sm text-gray-500">
                             Access your health records, appointments, and more with a single sign-on.
                         </p>
-                        <Button className="w-full flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white">
+                        <Button
+                            className="w-full flex items-center justify-center gap-2 bg-teal-500 hover:bg-teal-600 text-white"
+                            onClick={hanldeLoginButton}
+                        >
                             <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

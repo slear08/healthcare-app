@@ -7,12 +7,11 @@ import { Button } from '@/components/ui/button';
 export default function UserDashboard() {
     const navigate = useNavigate();
     const handleBookAppointment = () => {
-        console.log('Book Appointment clicked');
-        // Implement appointment booking logic here
+        navigate('/appointment');
     };
 
     const handleMedicineReminder = () => {
-        navigate('/user-reminder');
+        navigate('/reminders');
     };
 
     return (
@@ -23,7 +22,7 @@ export default function UserDashboard() {
             <div className="absolute bottom-1/4 left-1/4 w-24 h-24 bg-teal-200 rounded-full" />
 
             <div className="z-10 text-center space-y-8 w-full max-w-md">
-                <h1 className="text-3xl font-bold text-teal-700">Welcome to Senior Check</h1>
+                <h1 className="max-sm:text-2xl md:text-3xl font-bold text-teal-700">Welcome to Senior Check</h1>
                 <p className="text-gray-600">What would you like to do today?</p>
 
                 <div className="space-y-6 w-full max-w-md mx-auto">
@@ -34,10 +33,10 @@ export default function UserDashboard() {
                     >
                         <Button
                             onClick={handleBookAppointment}
-                            className="w-full py-8 text-lg flex items-center justify-center gap-3 bg-teal-500 hover:bg-teal-600 text-white"
+                            className="w-full py-6 text-lg flex items-center justify-center gap-3 bg-teal-500 hover:bg-teal-600 text-white"
                         >
                             <Calendar className="w-6 h-6" />
-                            Book an Appointment
+                            My Appointment
                         </Button>
                     </motion.div>
 
@@ -48,7 +47,7 @@ export default function UserDashboard() {
                     >
                         <Button
                             onClick={handleMedicineReminder}
-                            className="w-full py-8 text-lg flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white"
+                            className="w-full py-6 text-lg flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white"
                         >
                             <Clock className="w-6 h-6" />
                             My Medicine Reminder
