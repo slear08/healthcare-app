@@ -1,0 +1,24 @@
+import { Axios } from '@/api/axios';
+import { useQuery } from '@tanstack/react-query';
+
+interface PassportSuccessResponse {
+    user: {
+        id: string;
+        name: string;
+        email: string;
+        role: string;
+    };
+}
+
+const fetchPassportSuccess = async (): Promise<PassportSuccessResponse> => {
+    const response = await Axios.get<PassportSuccessResponse>('/api/login/success');
+    return response.data;
+};
+
+export const usePassportSuccess = () => {
+    return useQuery<PassportSuccessResponse, Error>({
+        queryKey: ['passportSuccess'],
+        queryFn: fetchPassportSuccess,
+        staleTime: 5000,
+    });
+};

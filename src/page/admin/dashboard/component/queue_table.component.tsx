@@ -41,8 +41,8 @@ export function QueueTable() {
     return (
         <div>
             <div className="flex justify-between">
-                <h2 className="text-xl font-semibold mb-4">Queue Management</h2>
-                <Button size="icon" className="bg-slate-500">
+                <h2 className="text-xl font-semibold mb-4 text-teal-700">Queue Management</h2>
+                <Button size="icon" className="bg-teal-700 hover:bg-teal-500">
                     <Settings />
                 </Button>
             </div>
