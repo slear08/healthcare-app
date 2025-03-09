@@ -22,7 +22,7 @@ export default function ReminderList({ reminders, onEdit, onDelete }: ReminderLi
             <AnimatePresence>
                 {reminders.map((reminder) => (
                     <motion.li
-                        key={reminder.id}
+                        key={reminder._id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -66,7 +66,7 @@ export default function ReminderList({ reminders, onEdit, onDelete }: ReminderLi
                                 <Edit className="w-4 h-4" />
                             </Button>
                             <Button
-                                onClick={() => onDelete(reminder.id!)}
+                                onClick={() => onDelete(reminder._id!)}
                                 variant="outline"
                                 size="icon"
                                 className="text-red-600 hover:text-red-700"

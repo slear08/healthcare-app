@@ -1,32 +1,37 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import AdminDashboardPage from '@/page/admin/dashboard';
 import AppointmentPage from '@/page/appointment';
-import LoginPage from '@/page/login';
 import ReminderPage from '@/page/reminder';
-import UserDashboard from '@/page/user_dashboard';
+
+import { RoleBasedRoute } from './components/auth/auth_route.component';
+import HomePage from './page/home';
+import LoginPage from './page/login';
 
 function App() {
     const router = createBrowserRouter([
         {
-            path: '/',
+            path: '/login',
             element: <LoginPage />,
         },
         {
-            path: '/user-dashboard',
-            element: <UserDashboard />,
-        },
-        {
-            path: '/admin-dashboard',
-            element: <AdminDashboardPage />,
+            path: '/',
+            element: <HomePage />,
         },
         {
             path: '/appointment',
-            element: <AppointmentPage />,
+            element: (
+                <RoleBasedRoute allowedRoles={['USER']}>
+                    <AppointmentPage />
+                </RoleBasedRoute>
+            ),
         },
         {
             path: '/reminders',
-            element: <ReminderPage />,
+            element: (
+                <RoleBasedRoute allowedRoles={['USER']}>
+                    <ReminderPage />
+                </RoleBasedRoute>
+            ),
         },
     ]);
 

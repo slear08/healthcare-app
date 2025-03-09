@@ -1,9 +1,10 @@
-import { Activity, AlertCircle, CheckCircle, Loader2, Settings, User } from 'lucide-react';
+import { Activity, AlertCircle, CheckCircle, Loader2, User } from 'lucide-react';
 import { useState } from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
+import QueueSettings from './queue_settings.component';
 
 type QueueItem = {
     id: string;
@@ -41,10 +42,8 @@ export function QueueTable() {
     return (
         <div>
             <div className="flex justify-between">
-                <h2 className="text-xl font-semibold mb-4">Queue Management</h2>
-                <Button size="icon" className="bg-slate-500">
-                    <Settings />
-                </Button>
+                <h2 className="text-xl font-semibold mb-4 text-teal-700">Queue Management</h2>
+                <QueueSettings />
             </div>
             <Table>
                 <TableHeader>

@@ -1,26 +1,27 @@
+import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Activity, CalendarDays, History } from 'lucide-react';
 
+import { useQueueHistory } from '@/api/users/queries/get_queue_history.query';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 export default function AppointmentHistory() {
-    const appointmentHistory = [
-        { date: 'January 15, 2024', purpose: 'General Checkup', status: 'Completed' },
-        { date: 'October 22, 2023', purpose: 'Flu Vaccination', status: 'Completed' },
-        { date: 'July 03, 2023', purpose: 'Physical Therapy', status: 'Cancelled' },
-    ];
+    const { data } = useQueueHistory();
+
+    const appointmentHistory = data?.data;
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'Completed':
-                return 'text-green-500';
-            case 'Cancelled':
-                return 'text-red-500';
-            case 'Pending':
-                return 'text-yellow-500';
+            case 'in-progress':
+                return 'bg-green-500';
+            case 'cancelled':
+                return 'bg-red-500';
+            case 'waiting':
+                return 'bg-blue-500';
             default:
-                return 'text-gray-500';
+                return 'bg-gray-500';
         }
     };
 
@@ -44,7 +45,7 @@ export default function AppointmentHistory() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                 >
-                    {appointmentHistory.map((appointment, index) => (
+                    {appointmentHistory?.map((appointment, index) => (
                         <motion.div
                             key={index}
                             className="border-b pb-4"
@@ -52,17 +53,19 @@ export default function AppointmentHistory() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
-                            <div className="flex items-center gap-1 mb-2 text-teal-700">
-                                <CalendarDays className="w-4 h-4 text-gray-500" />
-                                <span className="font-semibold">{appointment.date}</span>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1 mb-2 text-teal-700">
+                                    <CalendarDays className="w-4 h-4 text-gray-500" />
+                                    <span className="font-semibold">
+                                        {format(new Date(appointment.timeSchedule), 'MMM. dd yyyy')}
+                                    </span>
+                                </div>
+                                <Badge className={`${getStatusColor(appointment.status)}`}>{appointment.status}</Badge>
                             </div>
                             <div className="flex items-center gap-1 mb-2 text-teal-700">
                                 <Activity className="w-4 h-4 text-gray-500" />
-                                <span>{appointment.purpose}</span>
+                                <span>{appointment.purpose.toUpperCase()}</span>
                             </div>
-                            <span className={`text-sm ${getStatusColor(appointment.status)}`}>
-                                {appointment.status}
-                            </span>
                         </motion.div>
                     ))}
                 </motion.div>

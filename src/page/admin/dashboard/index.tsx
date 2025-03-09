@@ -12,14 +12,14 @@ import { QueueTable } from './component/queue_table.component';
 export default function AdminDashboardPage() {
     const [isOpen, setIsOpen] = useState(false);
     return (
-        <div className="container mx-auto py-10 px-24">
+        <div className="container mx-auto py-10 px-24 bg-teal-50 ">
             <div className="flex justify-between items-center mb-6  ">
-                <h1 className="text-2xl font-bold">Monitoring Dashboard</h1>
+                <h1 className="text-2xl font-bold text-teal-700">Monitoring Dashboard</h1>
                 <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
                         <div className="flex items-center justify-center gap-2">
-                            <span>Admin</span>
-                            <Button className="rounded-full w-10 h-10 p-0 bg-slate-500">
+                            <span className="text-teal-700 font-semibold">Admin</span>
+                            <Button className="rounded-full w-10 h-10 p-0 bg-teal-700 hover:bg-teal-500">
                                 <User className="h-5 w-5" />
                             </Button>
                         </div>
@@ -40,35 +40,35 @@ export default function AdminDashboardPage() {
                 <div className="flex flex-col justify-around gap-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                            <CardTitle className="text-sm font-medium text-teal-700">Total Users</CardTitle>
                             <Users className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">1,234</div>
+                            <div className="text-2xl font-bold text-teal-500">1,234</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Waiting Queue</CardTitle>
+                            <CardTitle className="text-sm font-medium text-teal-700">Waiting Queue</CardTitle>
                             <Clock className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">56</div>
+                            <div className="text-2xl font-bold text-teal-500">56</div>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Queue Status</CardTitle>
+                            <CardTitle className="text-sm font-medium text-teal-700">Queue Status</CardTitle>
                             <Power className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Active</div>
+                            <div className="text-2xl font-bold text-teal-500">Active</div>
                         </CardContent>
                     </Card>
                 </div>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Weekly New Registered User</CardTitle>
+                        <CardTitle className="text-sm font-medium text-teal-700">Weekly New Registered User</CardTitle>
                         <BarChart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -77,10 +77,10 @@ export default function AdminDashboardPage() {
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Weekly Queue Trend</CardTitle>
+                        <CardTitle className="text-sm font-medium text-teal-700">Weekly Queue Trend</CardTitle>
                         <BarChart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex justify-center items-center">
                         <QueueChart />
                     </CardContent>
                 </Card>

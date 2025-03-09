@@ -17,7 +17,7 @@ export function QueueChart() {
         <ChartContainer
             config={{
                 value: {
-                    label: 'Queue Items',
+                    label: 'Total',
                     color: 'hsl(var(--chart-1))',
                 },
             }}
