@@ -1,5 +1,6 @@
 import type React from 'react';
 
+import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export default function ReminderModal({ onClose, onSave, reminder }: ReminderMod
     const [time, setTime] = useState(reminder?.time || '');
     const [reminderDate, setReminderDate] = useState(reminder?.reminderDate || getCurrentDate());
 
+    console.log('reminder', reminder);
     useEffect(() => {
         if (reminder) {
             setName(reminder.name);
@@ -43,7 +45,7 @@ export default function ReminderModal({ onClose, onSave, reminder }: ReminderMod
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSave({
-            id: reminder?.id || undefined,
+            _id: reminder?._id || undefined,
             name,
             numberToTake: Number.parseInt(numberToTake),
             isEveryday,
@@ -101,7 +103,7 @@ export default function ReminderModal({ onClose, onSave, reminder }: ReminderMod
                             <Input
                                 id="reminderDate"
                                 type="date"
-                                value={reminderDate}
+                                value={format(new Date(reminderDate), 'yyyy-MM-dd')}
                                 min={getCurrentDate()}
                                 onChange={(e) => setReminderDate(e.target.value)}
                                 required={!isEveryday}

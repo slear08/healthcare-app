@@ -1,12 +1,14 @@
 import { Axios } from '@/api/axios';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CreateQueueRequest {
     purpose: string;
 }
 
 interface CreateQueueResponse {
-    message: string;
+    status: string;
+    purpose: string;
+    timeSchedule: string;
 }
 
 const createQueue = async ({ purpose }: CreateQueueRequest): Promise<CreateQueueResponse> => {
@@ -15,7 +17,11 @@ const createQueue = async ({ purpose }: CreateQueueRequest): Promise<CreateQueue
 };
 
 export const useCreateQueue = () => {
+    const queryClient = useQueryClient();
     return useMutation<CreateQueueResponse, Error, CreateQueueRequest>({
         mutationFn: createQueue,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['activeQueue'] });
+        },
     });
 };

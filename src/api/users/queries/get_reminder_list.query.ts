@@ -2,7 +2,7 @@ import { Axios } from '@/api/axios';
 import { useQuery } from '@tanstack/react-query';
 
 interface MedicineReminder {
-    id: string;
+    _id: string;
     name: string;
     numberToTake: number;
     isEveryday: boolean;
@@ -16,7 +16,7 @@ interface MedicineReminderResponse {
 }
 
 const fetchMedicineReminders = async (): Promise<MedicineReminderResponse> => {
-    const response = await Axios.get<MedicineReminderResponse>('/api/reminders/list');
+    const response = await Axios.get<MedicineReminderResponse>('/api/reminder/list');
     return response.data;
 };
 

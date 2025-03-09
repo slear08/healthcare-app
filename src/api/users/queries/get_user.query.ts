@@ -19,6 +19,9 @@ export const usePassportSuccess = () => {
     return useQuery<PassportSuccessResponse, Error>({
         queryKey: ['passportSuccess'],
         queryFn: fetchPassportSuccess,
+        refetchOnMount: false,
+        refetchOnWindowFocus: false,
         staleTime: 5000,
+        retry: false,
     });
 };

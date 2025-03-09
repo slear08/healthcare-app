@@ -1,10 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { CircleChevronLeft } from 'lucide-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useActiveQueue } from '@/api/users/queries/get_active_queue.query';
 import { Button } from '@/components/ui/button';
 import { Sheet } from '@/components/ui/sheet';
+import Spinner from '@/components/ui/spinner';
 
 import ActiveAppointment from './component/active_appointment.component';
 import AppointmentHistory from './component/appointment_history.component';
@@ -12,16 +13,18 @@ import NoActiveAppointment from './component/no_active_appointment.component';
 
 export default function AppointmentPage() {
     const navigate = useNavigate();
+    const { data, isLoading } = useActiveQueue();
 
-    const [hasActiveAppointment, setActiveAppointment] = useState(false);
+    const userQueue = data?.data?.userQueue ?? [];
+    const activeAppointment = userQueue.length > 0;
 
     const handleBackButton = () => {
         navigate(-1);
     };
-    const handleBookAppointmentButton = () => {
-        setActiveAppointment(!hasActiveAppointment);
-    };
 
+    if (isLoading) {
+        return <Spinner />;
+    }
     return (
         <motion.main
             className="flex min-h-screen items-center justify-center p-4 bg-teal-50 relative overflow-hidden"
@@ -76,11 +79,7 @@ export default function AppointmentPage() {
                     </Sheet>
                 </motion.div>
                 <AnimatePresence mode="wait">
-                    {hasActiveAppointment ? (
-                        <ActiveAppointment key="active" handleBookAppointmentButton={handleBookAppointmentButton} />
-                    ) : (
-                        <NoActiveAppointment key="inactive" handleBookAppointmentButton={handleBookAppointmentButton} />
-                    )}
+                    {activeAppointment ? <ActiveAppointment key="active" /> : <NoActiveAppointment key="inactive" />}
                 </AnimatePresence>
             </div>
         </motion.main>

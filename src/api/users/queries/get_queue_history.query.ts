@@ -1,9 +1,14 @@
 import { Axios } from '@/api/axios';
 import { useQuery } from '@tanstack/react-query';
 
+interface HistoryItem {
+    purpose: string;
+    timeSchedule: string;
+    status: string;
+}
 interface QueueHistoryResponse {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queueList: any[];
+    message: string;
+    data: HistoryItem[];
 }
 
 const fetchQueueHistory = async (): Promise<QueueHistoryResponse> => {

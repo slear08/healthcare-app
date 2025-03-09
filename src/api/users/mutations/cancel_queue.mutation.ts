@@ -1,5 +1,5 @@
 import { Axios } from '@/api/axios';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CancelQueueResponse {
     message: string;
@@ -7,13 +7,18 @@ interface CancelQueueResponse {
     data: any;
 }
 
-const cancelUserQueue = async (queueId: number): Promise<CancelQueueResponse> => {
-    const response = await Axios.put<CancelQueueResponse>(`/api/queue/cancel/${queueId}`);
+const cancelUserQueue = async (queueId: string): Promise<CancelQueueResponse> => {
+    const response = await Axios.put<CancelQueueResponse>(`/api/queue/user/update/queue/${queueId}`);
     return response.data;
 };
 
 export const useCancelQueue = () => {
-    return useMutation<CancelQueueResponse, Error, number>({
+    const queryClient = useQueryClient();
+    return useMutation<CancelQueueResponse, Error, string>({
         mutationFn: cancelUserQueue,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['activeQueue'] });
+            queryClient.invalidateQueries({ queryKey: ['queueHistory'] });
+        },
     });
 };

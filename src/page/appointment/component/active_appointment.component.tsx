@@ -1,6 +1,11 @@
+import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Activity, CalendarDays, CalendarX2, Check } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 
+import { useCancelQueue } from '@/api/users/mutations/cancel_queue.mutation';
+import { useActiveQueue } from '@/api/users/queries/get_active_queue.query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -14,11 +19,20 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 
-export default function ActiveAppointment({
-    handleBookAppointmentButton,
-}: {
-    handleBookAppointmentButton: () => void;
-}) {
+export default function ActiveAppointment() {
+    const { data } = useActiveQueue();
+    const { mutateAsync } = useCancelQueue();
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const handleCancelAppointmentButton = () => {
+        toast.promise(mutateAsync(data?.data?.userQueue?.[0]?._id as string), {
+            loading: 'Loading...',
+            success: <b>Appointment Successfully Cancelled</b>,
+            error: <b>Something Went Wrong</b>,
+        });
+        setDialogOpen(false);
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -44,11 +58,15 @@ export default function ActiveAppointment({
                         >
                             <div className="flex items-center gap-1 mb-2 text-teal-700">
                                 <CalendarDays className="w-5 h-5 text-gray-500" />
-                                <span className="font-semibold">February 16, 2025</span>
+                                <span className="font-semibold">
+                                    {data?.data?.userQueue?.[0]?.timeSchedule
+                                        ? format(new Date(data.data.userQueue[0].timeSchedule), 'MMM. dd yyyy')
+                                        : 'No Scheduled Time'}
+                                </span>
                             </div>
                             <div className="flex items-center gap-1 mb-2 text-teal-700">
                                 <Activity className="w-5 h-5 text-gray-500" />
-                                <span>Medical Checkup</span>
+                                <span>{data?.data?.userQueue?.[0]?.purpose.toLocaleUpperCase()}</span>
                             </div>
                         </motion.div>
                         <motion.div
@@ -57,8 +75,16 @@ export default function ActiveAppointment({
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
                         >
-                            <div className="w-3 h-3 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
-                            <span className="text-sm font-normal">Waiting</span>
+                            <div
+                                className={`w-3 h-3 ${
+                                    data?.data?.userQueue?.[0]?.status.toLowerCase() === 'waiting'
+                                        ? 'bg-blue-500'
+                                        : 'bg-teal-500'
+                                }  rounded-full mr-2 animate-pulse`}
+                            ></div>
+                            <span className="text-sm font-normal">
+                                {data?.data?.userQueue?.[0]?.status.toLowerCase()}
+                            </span>
                         </motion.div>
                     </CardTitle>
                 </CardHeader>
@@ -70,7 +96,7 @@ export default function ActiveAppointment({
                         transition={{ duration: 0.5, delay: 0.4 }}
                     >
                         <p className="text-lg font-semibold text-teal-600">Queue Information</p>
-                        <p className="text-teal-600">Total in queue: 15</p>
+                        <p className="text-teal-600">Total in queue: {data?.data?.totalWaiting}</p>
                     </motion.div>
                     <motion.div
                         className="text-center"
@@ -85,15 +111,19 @@ export default function ActiveAppointment({
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.6 }}
                         >
-                            3
+                            {data?.data?.position}
                         </motion.p>
 
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                            <Dialog>
+                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                                 <DialogTrigger asChild>
-                                    <Button variant="destructive" size="sm">
-                                        Cancel Appointment
-                                    </Button>
+                                    {(data?.data?.position as number) === 1 ? (
+                                        ''
+                                    ) : (
+                                        <Button variant="destructive" size="sm">
+                                            Cancel Appointment
+                                        </Button>
+                                    )}
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
@@ -105,7 +135,9 @@ export default function ActiveAppointment({
                                         >
                                             <CalendarX2 className="w-12 h-12 text-teal-500" />
                                         </motion.div>
-                                        <DialogTitle className="text-center text-xl">Confirm Booking</DialogTitle>
+                                        <DialogTitle className="text-center text-xl">
+                                            Confirm Cancel Appointment
+                                        </DialogTitle>
                                         <DialogDescription className="text-center">
                                             <motion.span
                                                 initial={{ opacity: 0, y: 20 }}
@@ -127,7 +159,7 @@ export default function ActiveAppointment({
                                         <Button
                                             className="bg-teal-500 hover:bg-teal-600"
                                             size="sm"
-                                            onClick={handleBookAppointmentButton}
+                                            onClick={handleCancelAppointmentButton}
                                         >
                                             <Check className="w-4 h-4" />
                                             Yes, I am sure.
