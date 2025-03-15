@@ -9,14 +9,8 @@ import { useActiveQueue } from '@/api/users/queries/get_active_queue.query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Dialog,
-    DialogClose,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+    DialogTrigger
 } from '@/components/ui/dialog';
 
 export default function ActiveAppointment() {
@@ -117,7 +111,8 @@ export default function ActiveAppointment() {
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                                 <DialogTrigger asChild>
-                                    {(data?.data?.position as number) === 1 ? (
+                                    {(data?.data?.position as number) === 1 ||
+                                    data?.data?.userQueue?.[0]?.status.toLowerCase() === 'in-progress' ? (
                                         ''
                                     ) : (
                                         <Button variant="destructive" size="sm">

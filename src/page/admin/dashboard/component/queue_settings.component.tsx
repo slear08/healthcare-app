@@ -8,15 +8,13 @@ import * as z from 'zod';
 import { useUpdateQueueLimit } from '@/api/admin/mutations/update_queue_limit.mutation';
 import { useQueueLimit } from '@/api/admin/queries/get_queue_limit.query';
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+    AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle,
+    AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+    Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -78,6 +76,14 @@ export default function QueueSettings() {
         }
     }
 
+    const handleCancel = () => {
+        form.reset({
+            queueEnabled: queueSettings?.status === 'ON',
+            queueLimit: queueSettings?.limit,
+        });
+        setOpen(false);
+    };
+
     if (isLoading) {
         return (
             <Button disabled className="bg-teal-700" size="icon">
@@ -89,8 +95,9 @@ export default function QueueSettings() {
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
             <AlertDialogTrigger asChild>
-                <Button className="bg-teal-700 hover:bg-teal-500" size="icon">
+                <Button className="bg-teal-700 hover:bg-teal-500" size="sm">
                     <Settings className="h-5 w-5" />
+                    Queue Settings
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -139,7 +146,7 @@ export default function QueueSettings() {
                         />
 
                         <div className="flex justify-end space-x-4 pt-2">
-                            <Button variant="outline" type="button" onClick={() => setOpen(false)} disabled={isPending}>
+                            <Button variant="outline" type="button" onClick={handleCancel} disabled={isPending}>
                                 Cancel
                             </Button>
                             <Button className="bg-teal-700 hover:bg-teal-500" type="submit" disabled={isPending}>
