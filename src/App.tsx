@@ -4,6 +4,7 @@ import AppointmentPage from '@/page/appointment';
 import ReminderPage from '@/page/reminder';
 
 import { RoleBasedRoute } from './components/auth/auth_route.component';
+import { LoginAdmin } from './page/admin/login';
 import HomePage from './page/home';
 import LoginPage from './page/login';
 
@@ -12,6 +13,10 @@ function App() {
         {
             path: '/login',
             element: <LoginPage />,
+        },
+        {
+            path: '/admin/login',
+            element: <LoginAdmin />,
         },
         {
             path: '/',
