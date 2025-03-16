@@ -4,27 +4,24 @@ import { useNavigate } from 'react-router-dom';
 
 import { useLogout } from '@/api/global/logout.mutation';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function UserDashboard() {
     const navigate = useNavigate();
     const { mutate } = useLogout();
     const { logout } = useAuthStore();
+    const queryClient = useQueryClient();
 
     const handleLogout = () => {
         mutate(undefined, {
             onSuccess: () => {
+                queryClient.removeQueries();
+                navigate('/login', { replace: true });
                 logout();
             },
         });
@@ -71,8 +68,8 @@ export default function UserDashboard() {
 
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <div className="flex items-center justify-center gap-1 text-teal-500 hover:teal-teal-600 cursor-pointer hover:underline">
-                                <LogOut />
+                            <div className="flex items-center justify-center gap-1 text-teal-500 hover:text-teal-600 cursor-pointer hover:underline">
+                                <LogOut className="w-4 h-4" />
                                 Sign Out
                             </div>
                         </AlertDialogTrigger>
@@ -87,7 +84,7 @@ export default function UserDashboard() {
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction className="bg-teal-500 hover:bg-teal-600" onClick={handleLogout}>
-                                    <LogOut /> Yes, Logout
+                                    <LogOut className="w-4 h-4 mr-2" /> Yes, Logout
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>

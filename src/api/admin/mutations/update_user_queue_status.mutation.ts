@@ -1,9 +1,12 @@
 import { Axios } from '@/api/axios';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+type QueueStatus = 'waiting' | 'in-progress' | 'completed' | 'cancelled';
 
 interface UpdateQueueStatusRequest {
+    userId: string;
     queueId: string;
-    status: 'waiting' | 'in-progress' | 'completed';
+    status: QueueStatus;
 }
 
 interface UpdateQueueStatusResponse {
@@ -13,15 +16,24 @@ interface UpdateQueueStatusResponse {
 }
 
 const updateUserQueueStatus = async ({
+    userId,
     queueId,
     status,
 }: UpdateQueueStatusRequest): Promise<UpdateQueueStatusResponse> => {
-    const response = await Axios.put<UpdateQueueStatusResponse>(`/api/queue/update/${queueId}`, { status });
+    const response = await Axios.put<UpdateQueueStatusResponse>(`/api/queue/user-list/update/${userId}/${queueId}`, {
+        status,
+    });
     return response.data;
 };
 
 export const useUpdateQueueStatus = () => {
+    const queryClient = useQueryClient();
+
     return useMutation<UpdateQueueStatusResponse, Error, UpdateQueueStatusRequest>({
         mutationFn: updateUserQueueStatus,
+        onSuccess: () => {
+            // Invalidate and refetch the queue list
+            queryClient.invalidateQueries({ queryKey: ['queue-list'] });
+        },
     });
 };

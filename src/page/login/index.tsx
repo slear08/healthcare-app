@@ -1,9 +1,25 @@
 import { Heart } from 'lucide-react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAuthStore } from '@/store/auth';
 
 export default function LoginPage() {
+    const navigate = useNavigate();
+    const { isAuthenticated, user } = useAuthStore();
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            navigate('/', { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
+
+    if (isAuthenticated && user) {
+        return null;
+    }
+
     const handleLoginButton = () => {
         window.open('http://localhost:5000/api/auth/google', '_self');
     };

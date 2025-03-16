@@ -1,5 +1,5 @@
 import { Axios } from '@/api/axios';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UpdateQueueLimitRequest {
     status: 'ON' | 'OFF';
@@ -7,17 +7,26 @@ interface UpdateQueueLimitRequest {
 }
 
 interface UpdateQueueLimitResponse {
-    status: 'ON' | 'OFF';
-    limit: number;
+    success: boolean;
+    data: {
+        status: 'ON' | 'OFF';
+        limit: number;
+        createdAt: string;
+        updatedAt: string;
+    };
 }
 
-const updateQueueLimit = async ({ status, limit }: UpdateQueueLimitRequest): Promise<UpdateQueueLimitResponse> => {
-    const response = await Axios.put<UpdateQueueLimitResponse>('/api/queue/update-queue', { status, limit });
-    return response.data;
-};
-
 export const useUpdateQueueLimit = () => {
-    return useMutation<UpdateQueueLimitResponse, Error, UpdateQueueLimitRequest>({
-        mutationFn: updateQueueLimit,
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (data: UpdateQueueLimitRequest) => {
+            const response = await Axios.put<UpdateQueueLimitResponse>('/api/queue/update-queue', data);
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['queue-limit'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
+        },
     });
 };

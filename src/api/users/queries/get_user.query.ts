@@ -15,13 +15,13 @@ const fetchPassportSuccess = async (): Promise<PassportSuccessResponse> => {
     return response.data;
 };
 
-export const usePassportSuccess = () => {
+export const usePassportSuccess = (options?: { enabled?: boolean }) => {
     return useQuery<PassportSuccessResponse, Error>({
         queryKey: ['passportSuccess'],
         queryFn: fetchPassportSuccess,
         refetchOnMount: false,
         refetchOnWindowFocus: false,
-        staleTime: 5000,
         retry: false,
+        enabled: options?.enabled ?? true,
     });
 };
