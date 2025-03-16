@@ -20,6 +20,7 @@ import {
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import QueueSettings from './queue_settings.component';
 
@@ -32,18 +33,20 @@ const STATUS_OPTIONS: { value: QueueStatus; label: string }[] = [
     { value: 'cancelled', label: 'Cancelled' },
 ];
 
-type QueueItem = {
+interface QueueUser {
     _id: string;
-    status: QueueStatus;
+    name: string;
+    email: string;
+    profile: string;
+}
+
+interface QueueItem {
+    _id: string;
+    user: QueueUser;
     purpose: string;
     timeSchedule: string;
-    user: {
-        _id: string;
-        name: string;
-        profile: string;
-        email: string;
-    };
-};
+    status: QueueStatus;
+}
 
 const getNextPossibleStatuses = (currentStatus: QueueStatus): QueueStatus[] => {
     switch (currentStatus) {
@@ -64,15 +67,59 @@ export function QueueTable() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<string>('all');
     const [purposeFilter, setPurposeFilter] = useState<string>('all');
+    const [activeTab, setActiveTab] = useState<QueueStatus | 'all'>('all');
 
-    const { data, isLoading, isError } = useQueueList({
-        page: currentPage,
-        status: statusFilter === 'all' ? undefined : (statusFilter as QueueStatus),
+    // Separate queries for each status
+    const waitingQueues = useQueueList({
+        page: activeTab === 'waiting' ? currentPage : 1,
+        status: 'waiting',
         search: debouncedSearchTerm,
         purpose: purposeFilter === 'all' ? undefined : purposeFilter,
     });
+
+    const inProgressQueues = useQueueList({
+        page: activeTab === 'in-progress' ? currentPage : 1,
+        status: 'in-progress',
+        search: debouncedSearchTerm,
+        purpose: purposeFilter === 'all' ? undefined : purposeFilter,
+    });
+
+    const completedQueues = useQueueList({
+        page: activeTab === 'completed' ? currentPage : 1,
+        status: 'completed',
+        search: debouncedSearchTerm,
+        purpose: purposeFilter === 'all' ? undefined : purposeFilter,
+    });
+
+    const cancelledQueues = useQueueList({
+        page: activeTab === 'cancelled' ? currentPage : 1,
+        status: 'cancelled',
+        search: debouncedSearchTerm,
+        purpose: purposeFilter === 'all' ? undefined : purposeFilter,
+    });
+
+    const allQueues = useQueueList({
+        page: activeTab === 'all' ? currentPage : 1,
+        search: debouncedSearchTerm,
+        purpose: purposeFilter === 'all' ? undefined : purposeFilter,
+    });
+
+    // Get the active query based on current tab
+    const getActiveQuery = () => {
+        switch (activeTab) {
+            case 'waiting':
+                return waitingQueues;
+            case 'in-progress':
+                return inProgressQueues;
+            case 'completed':
+                return completedQueues;
+            case 'cancelled':
+                return cancelledQueues;
+            default:
+                return allQueues;
+        }
+    };
 
     const [statusChangeDialog, setStatusChangeDialog] = useState<{
         isOpen: boolean;
@@ -107,7 +154,7 @@ export function QueueTable() {
     // Reset page when filters change
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchTerm, statusFilter, purposeFilter]);
+    }, [debouncedSearchTerm, activeTab, purposeFilter]);
 
     const handleStatusChangeConfirm = async () => {
         try {
@@ -133,13 +180,13 @@ export function QueueTable() {
     };
 
     const goToNextPage = () => {
-        if (data?.pagination.hasNextPage) {
+        if (getActiveQuery().data?.pagination.hasNextPage) {
             setCurrentPage((prev) => prev + 1);
         }
     };
 
     const goToPreviousPage = () => {
-        if (data?.pagination.hasPreviousPage) {
+        if (getActiveQuery().data?.pagination.hasPreviousPage) {
             setCurrentPage((prev) => prev - 1);
         }
     };
@@ -178,46 +225,70 @@ export function QueueTable() {
         });
     };
 
-    const renderStatusSelect = (item: QueueItem) => {
-        const nextPossibleStatuses = getNextPossibleStatuses(item.status);
-        const currentStatusLabel = STATUS_OPTIONS.find((opt) => opt.value === item.status)?.label;
-
-        if (nextPossibleStatuses.length === 0) {
-            return <div className="text-sm text-muted-foreground italic px-2">Status: {currentStatusLabel}</div>;
-        }
-
-        return (
-            <Select
-                value={item.status}
-                onValueChange={(value: QueueStatus) => {
-                    setStatusChangeDialog({
-                        isOpen: true,
-                        itemId: item._id,
-                        userId: item.user._id,
-                        currentStatus: item.status,
-                        newStatus: value,
-                    });
-                }}
-            >
-                <SelectTrigger className="w-[140px] ml-auto">
-                    <SelectValue>{currentStatusLabel}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value={item.status}>{currentStatusLabel}</SelectItem>
-                    {STATUS_OPTIONS.filter((option) => nextPossibleStatuses.includes(option.value)).map(
-                        (option) =>
-                            option.value !== item.status && (
-                                <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                </SelectItem>
-                            )
-                    )}
-                </SelectContent>
-            </Select>
-        );
-    };
+    const renderQueueRow = (item: QueueItem) => (
+        <TableRow key={item._id}>
+            <TableCell className="font-mono text-xs">{item._id.split('_')[1]}</TableCell>
+            <TableCell>
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={item.user.profile} alt={item.user.name} />
+                        <AvatarFallback>
+                            {item.user.name
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .join('')}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <div className="font-medium">{item.user.name}</div>
+                        <div className="text-xs text-muted-foreground">{item.user.email}</div>
+                    </div>
+                </div>
+            </TableCell>
+            <TableCell>
+                <div className="flex items-center">
+                    <Activity className="h-4 w-4 mr-2 flex-shrink-0 text-teal-600" />
+                    <span>{formatPurpose(item.purpose)}</span>
+                </div>
+            </TableCell>
+            <TableCell>{formatDate(item.timeSchedule)}</TableCell>
+            <TableCell>{getStatusBadge(item.status)}</TableCell>
+            <TableCell className="text-right">
+                <Select
+                    value={item.status}
+                    onValueChange={(value: QueueStatus) => {
+                        setStatusChangeDialog({
+                            isOpen: true,
+                            itemId: item._id,
+                            userId: item.user._id,
+                            currentStatus: item.status,
+                            newStatus: value,
+                        });
+                    }}
+                >
+                    <SelectTrigger className="w-[140px] ml-auto">
+                        <SelectValue>{getStatusBadge(item.status)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value={item.status}>{getStatusBadge(item.status)}</SelectItem>
+                        {getNextPossibleStatuses(item.status).map(
+                            (status) =>
+                                status !== item.status && (
+                                    <SelectItem key={status} value={status}>
+                                        {getStatusBadge(status)}
+                                    </SelectItem>
+                                )
+                        )}
+                    </SelectContent>
+                </Select>
+            </TableCell>
+        </TableRow>
+    );
 
     const renderTableBody = () => {
+        const activeQuery = getActiveQuery();
+        const { data, isLoading } = activeQuery;
+
         if (isLoading) {
             return Array.from({ length: 10 }).map((_, index) => (
                 <TableRow key={`loading-${index}`}>
@@ -261,62 +332,35 @@ export function QueueTable() {
             );
         }
 
-        const rows = [];
-        const emptyRows = Math.max(10 - queueItems.length, 0);
-
-        // Add existing items
-        for (const item of queueItems) {
-            rows.push(
-                <TableRow key={item._id}>
-                    <TableCell className="font-mono text-xs">{item._id.split('_')[1]}</TableCell>
-                    <TableCell>
-                        <div className="flex items-center gap-2">
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src={item.user.profile} alt={item.user.name} />
-                                <AvatarFallback>
-                                    {item.user.name
-                                        .split(' ')
-                                        .map((n) => n[0])
-                                        .join('')}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <div className="font-medium">{item.user.name}</div>
-                                <div className="text-xs text-muted-foreground">{item.user.email}</div>
-                            </div>
-                        </div>
-                    </TableCell>
-                    <TableCell>
-                        <div className="flex items-center">
-                            <Activity className="h-4 w-4 mr-2 flex-shrink-0 text-teal-600" />
-                            <span>{formatPurpose(item.purpose)}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell>{formatDate(item.timeSchedule)}</TableCell>
-                    <TableCell>{getStatusBadge(item.status)}</TableCell>
-                    <TableCell className="text-right">{renderStatusSelect(item)}</TableCell>
-                </TableRow>
-            );
-        }
-
-        // Add empty rows to maintain consistent height
-        for (let i = 0; i < emptyRows; i++) {
-            rows.push(
-                <TableRow key={`empty-${i}`}>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                    <TableCell className="h-[40px]">&nbsp;</TableCell>
-                </TableRow>
-            );
-        }
+        const rows = [
+            ...queueItems.map(renderQueueRow),
+            ...Array(Math.max(5 - queueItems.length, 0))
+                .fill(null)
+                .map((_, i) => (
+                    <TableRow key={`empty-${i}`}>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                        <TableCell className="h-[40px]">&nbsp;</TableCell>
+                    </TableRow>
+                )),
+        ];
 
         return rows;
     };
 
-    if (isError) {
+    const getPaginationText = (
+        pagination: { currentPage: number; itemsPerPage: number; totalItems: number } | undefined
+    ) => {
+        if (!pagination) return '';
+        const start = (pagination.currentPage - 1) * pagination.itemsPerPage + 1;
+        const end = Math.min(pagination.currentPage * pagination.itemsPerPage, pagination.totalItems);
+        return `Showing ${start} to ${end} of ${pagination.totalItems} entries`;
+    };
+
+    if (getActiveQuery().isError) {
         return (
             <div className="flex justify-center items-center h-64">
                 <AlertCircle className="h-8 w-8 text-red-500" />
@@ -348,13 +392,28 @@ export function QueueTable() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleStatusChangeConfirm}>Confirm Change</AlertDialogAction>
+                        <AlertDialogAction
+                            className={`bg-teal-700 hover:bg-teal-500 ${
+                                statusChangeDialog.newStatus === 'cancelled' ? 'bg-red-700 hover:bg-red-500' : ''
+                            }`}
+                            onClick={handleStatusChangeConfirm}
+                        >
+                            Confirm Change
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl font-semibold text-teal-700">Queue Management</CardTitle>
+                    <div>
+                        <CardTitle className="text-xl font-semibold text-teal-700">Queue Management</CardTitle>
+                        <div className="text-sm text-muted-foreground mt-1 flex gap-3">
+                            <span>Waiting: {waitingQueues.data?.pagination?.totalItems ?? 0}</span>
+                            <span>In Progress: {inProgressQueues.data?.pagination?.totalItems ?? 0}</span>
+                            <span>Completed: {completedQueues.data?.pagination?.totalItems ?? 0}</span>
+                            <span>Cancelled: {cancelledQueues.data?.pagination?.totalItems ?? 0}</span>
+                        </div>
+                    </div>
                     <QueueSettings />
                 </div>
             </CardHeader>
@@ -372,18 +431,6 @@ export function QueueTable() {
                             />
                         </div>
                         <div className="flex gap-2">
-                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="w-[140px]">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Statuses</SelectItem>
-                                    <SelectItem value="waiting">Waiting</SelectItem>
-                                    <SelectItem value="in-progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
-                                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                                </SelectContent>
-                            </Select>
                             <Select value={purposeFilter} onValueChange={setPurposeFilter}>
                                 <SelectTrigger className="w-[160px]">
                                     <SelectValue placeholder="Purpose" />
@@ -397,40 +444,77 @@ export function QueueTable() {
                         </div>
                     </div>
 
-                    {data?.pagination && (
-                        <div className="text-sm text-muted-foreground">
-                            Showing {(data.pagination.currentPage - 1) * data.pagination.itemsPerPage + 1} to{' '}
-                            {Math.min(
-                                data.pagination.currentPage * data.pagination.itemsPerPage,
-                                data.pagination.totalItems
-                            )}{' '}
-                            of {data.pagination.totalItems} entries
-                        </div>
-                    )}
+                    <div className="mb-4">
+                        {getActiveQuery().data?.pagination && (
+                            <div className="text-sm text-muted-foreground">
+                                {getPaginationText(getActiveQuery().data?.pagination)}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Queue ID</TableHead>
-                                <TableHead>Patient</TableHead>
-                                <TableHead>Purpose</TableHead>
-                                <TableHead>Schedule Created</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>{renderTableBody()}</TableBody>
-                    </Table>
-                </div>
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(value) => setActiveTab(value as QueueStatus | 'all')}
+                    className="w-full"
+                >
+                    <TabsList className="mb-4">
+                        <TabsTrigger value="all" className="flex items-center gap-2">
+                            All Queues
+                            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-700">
+                                {allQueues.data?.pagination?.totalItems ?? 0}
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger value="waiting" className="flex items-center gap-2">
+                            Waiting
+                            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-700">
+                                {waitingQueues.data?.pagination?.totalItems ?? 0}
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger value="in-progress" className="flex items-center gap-2">
+                            In Progress
+                            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700">
+                                {inProgressQueues.data?.pagination?.totalItems ?? 0}
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger value="completed" className="flex items-center gap-2">
+                            Completed
+                            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-700">
+                                {completedQueues.data?.pagination?.totalItems ?? 0}
+                            </span>
+                        </TabsTrigger>
+                        <TabsTrigger value="cancelled" className="flex items-center gap-2">
+                            Cancelled
+                            <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-700">
+                                {cancelledQueues.data?.pagination?.totalItems ?? 0}
+                            </span>
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <div className="rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Queue ID</TableHead>
+                                    <TableHead>Patient</TableHead>
+                                    <TableHead>Purpose</TableHead>
+                                    <TableHead>Schedule Created</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>{renderTableBody()}</TableBody>
+                        </Table>
+                    </div>
+                </Tabs>
 
                 <div className="flex items-center justify-between space-x-2 py-4">
                     <div className="text-sm text-muted-foreground">
-                        {data?.pagination && (
+                        {getActiveQuery().data?.pagination && (
                             <>
-                                Page {data.pagination.currentPage} of {data.pagination.totalPages} (
-                                {data.pagination.totalItems} total entries)
+                                Page {getActiveQuery().data?.pagination?.currentPage ?? 1} of{' '}
+                                {getActiveQuery().data?.pagination?.totalPages ?? 1} (
+                                {getActiveQuery().data?.pagination?.totalItems ?? 0} total entries)
                             </>
                         )}
                     </div>
@@ -439,7 +523,7 @@ export function QueueTable() {
                             variant="outline"
                             size="sm"
                             onClick={goToPreviousPage}
-                            disabled={!data?.pagination.hasPreviousPage || isLoading}
+                            disabled={!getActiveQuery().data?.pagination?.hasPreviousPage || getActiveQuery().isLoading}
                         >
                             <ChevronLeft className="h-4 w-4" />
                             <span className="sr-only">Previous Page</span>
@@ -448,7 +532,7 @@ export function QueueTable() {
                             variant="outline"
                             size="sm"
                             onClick={goToNextPage}
-                            disabled={!data?.pagination.hasNextPage || isLoading}
+                            disabled={!getActiveQuery().data?.pagination?.hasNextPage || getActiveQuery().isLoading}
                         >
                             <ChevronRight className="h-4 w-4" />
                             <span className="sr-only">Next Page</span>

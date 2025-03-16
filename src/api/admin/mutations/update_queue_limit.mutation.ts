@@ -26,6 +26,7 @@ export const useUpdateQueueLimit = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['queue-limit'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
         },
     });
 };

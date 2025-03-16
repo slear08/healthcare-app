@@ -1,8 +1,12 @@
 import { BarChart, Clock, KeyRound, LogOut, Power, User, Users } from 'lucide-react';
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 
+import { useChangePassword } from '@/api/admin/mutations/change_password.mutation';
+import { useDashboardData } from '@/api/admin/queries/get_data_analytics.query';
 import { useLogout } from '@/api/global/logout.mutation';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
@@ -10,23 +14,85 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import {
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle
+} from '@/components/ui/dialog';
+import {
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import {
+    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 import { useAuthStore } from '@/store/auth';
-import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { QueueChart } from './component/queue_chart.component';
 import { QueueTable } from './component/queue_table.component';
 
+const changePasswordSchema = z
+    .object({
+        currentPassword: z.string().min(1, 'Current password is required'),
+        newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+        confirmPassword: z.string().min(1, 'Please confirm your password'),
+    })
+    .refine((data) => data.newPassword === data.confirmPassword, {
+        message: "Passwords don't match",
+        path: ['confirmPassword'],
+    });
+
+type ChangePasswordForm = z.infer<typeof changePasswordSchema>;
+
 export default function AdminDashboardPage() {
     const [isOpen, setIsOpen] = useState(false);
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [showChangePassword, setShowChangePassword] = useState(false);
     const navigate = useNavigate();
     const { mutateAsync: logout } = useLogout();
     const { logout: logoutStore } = useAuthStore();
+    const { data: dashboardData, isLoading } = useDashboardData();
+    const { mutateAsync: changePassword } = useChangePassword();
+
+    const form = useForm<ChangePasswordForm>({
+        resolver: zodResolver(changePasswordSchema),
+        defaultValues: {
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+        },
+    });
+
+    const handleChangePasswordClick = () => {
+        setIsOpen(false);
+        setShowChangePassword(true);
+    };
+
+    const onChangePasswordSubmit = async (data: ChangePasswordForm) => {
+        try {
+            await toast.promise(
+                changePassword({
+                    currentPassword: data.currentPassword,
+                    newPassword: data.newPassword,
+                }),
+                {
+                    loading: 'Changing password...',
+                    success: () => {
+                        setShowChangePassword(false);
+                        form.reset();
+                        return 'Password changed successfully';
+                    },
+                    error: 'Failed to change password',
+                }
+            );
+        } catch (error) {
+            console.error('Change password error:', error);
+            // Don't close dialog on error
+        }
+    };
 
     const handleLogoutClick = () => {
-        setIsOpen(false); // Close dropdown
-        setShowLogoutConfirm(true); // Show confirmation dialog
+        setIsOpen(false);
+        setShowLogoutConfirm(true);
     };
 
     const handleLogout = async () => {
@@ -46,8 +112,8 @@ export default function AdminDashboardPage() {
     };
 
     return (
-        <div className="container mx-auto py-10 px-24 ">
-            <div className="flex justify-between items-center mb-6  ">
+        <div className="container mx-auto py-10 px-24">
+            <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-teal-700">Monitoring Dashboard</h1>
                 <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
                     <DropdownMenuTrigger asChild>
@@ -59,7 +125,10 @@ export default function AdminDashboardPage() {
                         </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-40">
-                        <DropdownMenuItem className="cursor-pointer flex items-center gap-2">
+                        <DropdownMenuItem
+                            className="cursor-pointer flex items-center gap-2"
+                            onClick={handleChangePasswordClick}
+                        >
                             <KeyRound className="h-4 w-4" />
                             <span>Change Password</span>
                         </DropdownMenuItem>
@@ -74,7 +143,75 @@ export default function AdminDashboardPage() {
                 </DropdownMenu>
             </div>
 
-            {/* Logout Confirmation Dialog */}
+            <Dialog open={showChangePassword} onOpenChange={setShowChangePassword}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Change Password</DialogTitle>
+                        <DialogDescription>
+                            Enter your current password and a new password to change it.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onChangePasswordSubmit)} className="space-y-4">
+                            <FormField
+                                control={form.control}
+                                name="currentPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Current Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="newPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>New Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="confirmPassword"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Confirm New Password</FormLabel>
+                                        <FormControl>
+                                            <Input type="password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    onClick={() => {
+                                        setShowChangePassword(false);
+                                        form.reset();
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button className="bg-teal-700 hover:bg-teal-500" type="submit">
+                                    Change Password
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
             <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -99,36 +236,48 @@ export default function AdminDashboardPage() {
                         <Users className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-teal-500">1,234</div>
+                        <div className="text-2xl font-bold text-teal-500">{dashboardData?.totalUsers || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-teal-700">Waiting Queue</CardTitle>
+                        <CardTitle className="text-sm font-medium text-teal-700">Waiting Today</CardTitle>
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-teal-500">56</div>
+                        <div className="text-2xl font-bold text-teal-500">{dashboardData?.totalWaitingToday || 0}</div>
                     </CardContent>
                 </Card>
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-teal-700">Queue Status</CardTitle>
+                        <CardTitle className="text-sm font-medium text-teal-700">Queue Limit</CardTitle>
                         <Power className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold text-teal-500">Active</div>
+                        <div className="flex items-center gap-2">
+                            <div className="text-2xl font-bold text-teal-500">
+                                {dashboardData?.queueLimit.limit || 0}
+                            </div>
+                            <div
+                                className={`text-sm font-medium ${
+                                    dashboardData?.queueLimit.status === 'ON' ? 'text-green-500' : 'text-red-500'
+                                }`}
+                            >
+                                ({dashboardData?.queueLimit.status || 'OFF'})
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
+
             <div className="flex gap-4 mb-10">
                 <Card className="w-1/2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium text-teal-700">Weekly New Registered User</CardTitle>
+                        <CardTitle className="text-sm font-medium text-teal-700">Weekly New Users</CardTitle>
                         <BarChart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <QueueChart />
+                        <QueueChart data={dashboardData?.weeklyTrend.newUsers || []} isLoading={isLoading} />
                     </CardContent>
                 </Card>
                 <Card className="w-1/2">
@@ -137,10 +286,11 @@ export default function AdminDashboardPage() {
                         <BarChart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <QueueChart />
+                        <QueueChart data={dashboardData?.weeklyTrend.totalQueues || []} isLoading={isLoading} />
                     </CardContent>
                 </Card>
             </div>
+
             <QueueTable />
         </div>
     );

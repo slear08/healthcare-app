@@ -6,26 +6,31 @@ interface WeeklyTrendData {
     value: number | null;
 }
 
+interface QueueLimit {
+    status: 'ON' | 'OFF';
+    limit: number;
+}
+
 interface DashboardDataResponse {
-    totalUsers: number;
-    weeklyTrend: {
-        newUsers: WeeklyTrendData[];
-        totalQueues: WeeklyTrendData[];
-    };
-    totalWaitingToday: number;
-    queueLimit: {
-        status: 'ON' | 'OFF';
-        limit: number;
+    message: string;
+    data: {
+        totalUsers: number;
+        weeklyTrend: {
+            newUsers: WeeklyTrendData[];
+            totalQueues: WeeklyTrendData[];
+        };
+        totalWaitingToday: number;
+        queueLimit: QueueLimit;
     };
 }
 
-const fetchDashboardData = async (): Promise<DashboardDataResponse> => {
+const fetchDashboardData = async () => {
     const response = await Axios.get<DashboardDataResponse>('/api/data-analytics/dashboard');
-    return response.data;
+    return response.data.data;
 };
 
 export const useDashboardData = () => {
-    return useQuery<DashboardDataResponse, Error>({
+    return useQuery({
         queryKey: ['dashboardData'],
         queryFn: fetchDashboardData,
         staleTime: 5000,
