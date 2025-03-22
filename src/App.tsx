@@ -6,7 +6,9 @@ import ReminderPage from '@/page/reminder';
 import { RoleBasedRoute } from './components/auth/auth_route.component';
 import { LoginAdmin } from './page/admin/login';
 import HomePage from './page/home';
+import InstallationPage from './page/installation';
 import LoginPage from './page/login';
+import UserSetup from './page/user_setup';
 
 function App() {
     const router = createBrowserRouter([
@@ -21,6 +23,18 @@ function App() {
         {
             path: '/',
             element: <HomePage />,
+        },
+        {
+            path: '/installation',
+            element: <InstallationPage />,
+        },
+        {
+            path: '/profile-edit',
+            element: (
+                <RoleBasedRoute allowedRoles={['USER']}>
+                    <UserSetup />
+                </RoleBasedRoute>
+            ),
         },
         {
             path: '/appointment',
