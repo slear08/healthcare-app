@@ -1,56 +1,12 @@
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { cleanupOutdatedCaches, precacheAndRoute } from 'workbox-precaching';
+import { cleanupOutdatedCaches } from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { NetworkFirst } from 'workbox-strategies';
 
 declare let self: ServiceWorkerGlobalScope;
 
 // Clean up old caches
 cleanupOutdatedCaches();
-
-// Precache the offline page and other static assets
-precacheAndRoute(self.__WB_MANIFEST);
-
-// Cache the Google Fonts stylesheets with a stale-while-revalidate strategy.
-registerRoute(
-    /^https:\/\/fonts\.googleapis\.com/,
-    new NetworkFirst({
-        cacheName: 'google-fonts-stylesheets',
-    })
-);
-
-// Cache the underlying font files with a cache-first strategy for 1 year.
-registerRoute(
-    /^https:\/\/fonts\.gstatic\.com/,
-    new CacheFirst({
-        cacheName: 'google-fonts-webfonts',
-        plugins: [
-            new CacheableResponsePlugin({
-                statuses: [0, 200],
-            }),
-            new ExpirationPlugin({
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-                maxEntries: 30,
-            }),
-        ],
-    })
-);
-
-// Cache static assets
-registerRoute(
-    /\.(?:js|css|png|jpg|jpeg|svg|gif)$/,
-    new CacheFirst({
-        cacheName: 'static-resources',
-        plugins: [
-            new ExpirationPlugin({
-                maxEntries: 60,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 Days
-            }),
-        ],
-    })
-);
 
 // Create a specific handler for navigation requests
 const navigationHandler = async ({ event, request }: RouteHandlerCallbackOptions): Promise<Response> => {

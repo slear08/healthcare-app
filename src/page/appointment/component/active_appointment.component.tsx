@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Activity, CalendarDays, CalendarX2, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import { useCancelQueue } from '@/api/users/mutations/cancel_queue.mutation';
@@ -9,14 +9,59 @@ import { useActiveQueue } from '@/api/users/queries/get_active_queue.query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-    DialogTrigger
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
+import { useSocket } from '@/hooks/useSocket';
+
+interface QueueUpdateData {
+    queueId: string;
+    userId: string;
+    status: 'waiting' | 'in-progress' | 'completed';
+    updatedQueue: {
+        _id: string;
+        status: string;
+        purpose: string;
+        timeSchedule: string;
+        userId: string;
+    };
+}
 
 export default function ActiveAppointment() {
-    const { data } = useActiveQueue();
+    const { data, refetch } = useActiveQueue();
     const { mutateAsync } = useCancelQueue();
     const [dialogOpen, setDialogOpen] = useState(false);
+    const socket = useSocket();
+
+    // Listen for queue status updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleQueueStatusUpdate = (updateData: QueueUpdateData) => {
+            // Check if this update is for the current user's queue
+            if (data?.data?.userQueue?.[0]?._id === updateData.queueId) {
+                // Show toast notification
+                toast.success(`Your appointment status has been updated to ${updateData.status}`);
+
+                // Refetch the active queue data
+                refetch();
+            }
+        };
+
+        // Listen for queue status updates
+        socket.on('queueStatusUpdate', handleQueueStatusUpdate);
+
+        // Cleanup listener on unmount
+        return () => {
+            socket.off('queueStatusUpdate', handleQueueStatusUpdate);
+        };
+    }, [socket, data?.data?.userQueue?.[0]?._id, refetch]);
 
     const handleCancelAppointmentButton = () => {
         toast.promise(mutateAsync(data?.data?.userQueue?.[0]?._id as string), {
@@ -73,6 +118,8 @@ export default function ActiveAppointment() {
                                 className={`w-3 h-3 ${
                                     data?.data?.userQueue?.[0]?.status.toLowerCase() === 'waiting'
                                         ? 'bg-blue-500'
+                                        : data?.data?.userQueue?.[0]?.status.toLowerCase() === 'in-progress'
+                                        ? 'bg-yellow-500'
                                         : 'bg-teal-500'
                                 }  rounded-full mr-2 animate-pulse`}
                             ></div>

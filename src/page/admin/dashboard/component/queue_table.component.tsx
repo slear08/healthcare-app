@@ -6,21 +6,24 @@ import toast from 'react-hot-toast';
 import { useUpdateQueueStatus } from '@/api/admin/mutations/update_user_queue_status.mutation';
 import { useQueueList } from '@/api/admin/queries/get_queue_list.query';
 import {
-    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
-    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
-} from '@/components/ui/select';
-import {
-    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSocket } from '@/hooks/useSocket';
 
 import QueueSettings from './queue_settings.component';
 
@@ -48,6 +51,14 @@ interface QueueItem {
     status: QueueStatus;
 }
 
+interface NewQueueEntry {
+    queueId: string;
+    userId: string;
+    purpose: string;
+    timeSchedule: string;
+    status: QueueStatus;
+}
+
 const getNextPossibleStatuses = (currentStatus: QueueStatus): QueueStatus[] => {
     switch (currentStatus) {
         case 'waiting':
@@ -69,6 +80,7 @@ export function QueueTable() {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [purposeFilter, setPurposeFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<QueueStatus | 'all'>('all');
+    const socket = useSocket();
 
     // Separate queries for each status
     const waitingQueues = useQueueList({
@@ -104,6 +116,32 @@ export function QueueTable() {
         search: debouncedSearchTerm,
         purpose: purposeFilter === 'all' ? undefined : purposeFilter,
     });
+
+    // Listen for new queue entries
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewQueueEntry = (data: NewQueueEntry) => {
+            // Show toast notification
+            toast.success(`A new ${data.purpose} appointment has been scheduled.`, {
+                duration: 5000,
+                position: 'top-right',
+            });
+
+            // Refetch all queue data
+            waitingQueues.refetch();
+            inProgressQueues.refetch();
+            completedQueues.refetch();
+            cancelledQueues.refetch();
+            allQueues.refetch();
+        };
+
+        socket.on('newQueueEntry', handleNewQueueEntry);
+
+        return () => {
+            socket.off('newQueueEntry', handleNewQueueEntry);
+        };
+    }, [socket, waitingQueues, inProgressQueues, completedQueues, cancelledQueues, allQueues]);
 
     // Get the active query based on current tab
     const getActiveQuery = () => {
