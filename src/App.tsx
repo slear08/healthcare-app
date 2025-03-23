@@ -4,6 +4,8 @@ import AppointmentPage from '@/page/appointment';
 import ReminderPage from '@/page/reminder';
 
 import { RoleBasedRoute } from './components/auth/auth_route.component';
+import { OfflineFallback } from './components/OfflineFallback';
+import QueueUpdates from './hooks/queueUpdates';
 import { LoginAdmin } from './page/admin/login';
 import HomePage from './page/home';
 import InstallationPage from './page/installation';
@@ -21,6 +23,10 @@ function App() {
             element: <LoginAdmin />,
         },
         {
+            path: '/test',
+            element: <OfflineFallback />,
+        },
+        {
             path: '/',
             element: <HomePage />,
         },
@@ -32,7 +38,9 @@ function App() {
             path: '/profile-edit',
             element: (
                 <RoleBasedRoute allowedRoles={['USER']}>
-                    <UserSetup />
+                    <QueueUpdates>
+                        <UserSetup />
+                    </QueueUpdates>
                 </RoleBasedRoute>
             ),
         },
@@ -40,7 +48,9 @@ function App() {
             path: '/appointment',
             element: (
                 <RoleBasedRoute allowedRoles={['USER']}>
-                    <AppointmentPage />
+                    <QueueUpdates>
+                        <AppointmentPage />
+                    </QueueUpdates>
                 </RoleBasedRoute>
             ),
         },
@@ -48,7 +58,9 @@ function App() {
             path: '/reminders',
             element: (
                 <RoleBasedRoute allowedRoles={['USER']}>
-                    <ReminderPage />
+                    <QueueUpdates>
+                        <ReminderPage />
+                    </QueueUpdates>
                 </RoleBasedRoute>
             ),
         },

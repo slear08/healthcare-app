@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 import { usePassportSuccess } from '@/api/users/queries/get_user.query';
 import { OfflineFallback } from '@/components/OfflineFallback';
+import QueueUpdates from '@/hooks/queueUpdates';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAuthStore } from '@/store/auth';
 
@@ -48,7 +49,11 @@ const HomePage = () => {
     if (authUser?.role === 'USER') {
         // When offline, always show the dashboard instead of setup
         if (!isOnline || data?.user.isVerified) {
-            return <UserDashboard />;
+            return (
+                <QueueUpdates>
+                    <UserDashboard />
+                </QueueUpdates>
+            );
         }
 
         return <UserSetup />;
