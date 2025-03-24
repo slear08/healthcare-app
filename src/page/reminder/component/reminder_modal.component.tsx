@@ -1,5 +1,3 @@
-import type React from 'react';
-
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { Reminder } from '../';
 
+import type React from 'react';
 const getCurrentDate = () => {
     const now = new Date();
     return now.toISOString().split('T')[0];
@@ -29,7 +28,6 @@ export default function ReminderModal({ onClose, onSave, reminder }: ReminderMod
     const [time, setTime] = useState(reminder?.time || '');
     const [reminderDate, setReminderDate] = useState(reminder?.reminderDate || getCurrentDate());
 
-    console.log('reminder', reminder);
     useEffect(() => {
         if (reminder) {
             setName(reminder.name);

@@ -20,6 +20,7 @@ export default defineConfig(() => {
                 filename: 'sw.ts',
                 registerType: 'autoUpdate',
                 injectManifest: {
+                    swSrc: 'src/sw.ts',
                     swDest: 'dist/sw.js',
                     globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
                 },

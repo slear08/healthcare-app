@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import AppointmentPage from '@/page/appointment';
@@ -11,6 +12,7 @@ import HomePage from './page/home';
 import InstallationPage from './page/installation';
 import LoginPage from './page/login';
 import UserSetup from './page/user_setup';
+import { setupNotifications } from './utils/notificationSetup';
 
 function App() {
     const router = createBrowserRouter([
@@ -65,6 +67,11 @@ function App() {
             ),
         },
     ]);
+
+    useEffect(() => {
+        // Initial setup only
+        setupNotifications();
+    }, []); // Empty dependency array means this runs once on mount
 
     return (
         <div className="bg-teal-50">

@@ -24,12 +24,7 @@ function InstallationPage() {
     const handleInstallClick = () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the PWA install');
-                } else {
-                    console.log('User dismissed the PWA install');
-                }
+            deferredPrompt.userChoice.then(() => {
                 setDeferredPrompt(null);
             });
         }

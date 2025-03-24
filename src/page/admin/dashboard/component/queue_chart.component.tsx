@@ -1,10 +1,18 @@
-import {
-    BarChart as BarChartIcon, LineChart as LineChartIcon, PieChart as PieChartIcon
-} from 'lucide-react';
+import { BarChart as BarChartIcon, LineChart as LineChartIcon, PieChart as PieChartIcon } from 'lucide-react';
 import { useState } from 'react';
 import {
-    Bar, BarChart, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer,
-    Tooltip as RechartsTooltip, TooltipProps, XAxis, YAxis
+    Bar,
+    BarChart,
+    Cell,
+    Line,
+    LineChart,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip as RechartsTooltip,
+    TooltipProps,
+    XAxis,
+    YAxis,
 } from 'recharts';
 
 import { Button } from '@/components/ui/button';

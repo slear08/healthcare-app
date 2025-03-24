@@ -46,7 +46,6 @@ export default function QueueUpdates({ children }: { children: React.ReactNode }
         socket.on('queueStatusUpdate', handleQueueStatusUpdate);
 
         return () => {
-            console.log('Cleaning up queueStatusUpdate listener');
             socket.off('queueStatusUpdate', handleQueueStatusUpdate);
         };
     }, [socket, data?.data?.userQueue?.[0]?._id, refetch]);

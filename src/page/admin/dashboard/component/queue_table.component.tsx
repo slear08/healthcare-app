@@ -6,22 +6,20 @@ import toast from 'react-hot-toast';
 import { useUpdateQueueStatus } from '@/api/admin/mutations/update_user_queue_status.mutation';
 import { useQueueList } from '@/api/admin/queries/get_queue_list.query';
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+    AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from '@/components/ui/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from '@/components/ui/select';
+import {
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSocket } from '@/hooks/useSocket';
 
@@ -158,20 +156,12 @@ export function QueueTable() {
                                 <img className="h-10 w-10 rounded-full" src={`${data.profile}`} alt="profile" />
                             </div>
                             <div className="ml-3 flex-1">
-                                <p className="text-sm font-medium text-gray-900">{`${data.name}`}</p>
-                                <p className="mt-1 text-sm text-gray-500 text-capitalize">
-                                    {`${data.purpose} has been ${data.status}`}
+                                <p className="mt-1 text-sm text-gray-500 text-capitalize">{`${data.name}`}</p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {`has ${data.status} the appointment for ${data.purpose}`}
                                 </p>
                             </div>
                         </div>
-                    </div>
-                    <div className="flex border-l border-gray-200">
-                        <button
-                            onClick={() => toast.dismiss(t.id)}
-                            className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-teal-600 hover:text-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500"
-                        >
-                            Close
-                        </button>
                     </div>
                 </div>
             ));
