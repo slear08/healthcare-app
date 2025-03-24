@@ -21,6 +21,7 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useSocket } from '@/hooks/useSocket';
 
 import QueueSettings from './queue_settings.component';
 
@@ -48,6 +49,14 @@ interface QueueItem {
     status: QueueStatus;
 }
 
+interface NewQueueEntry {
+    queueId: string;
+    userId: string;
+    purpose: string;
+    timeSchedule: string;
+    status: QueueStatus;
+}
+
 const getNextPossibleStatuses = (currentStatus: QueueStatus): QueueStatus[] => {
     switch (currentStatus) {
         case 'waiting':
@@ -69,6 +78,7 @@ export function QueueTable() {
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [purposeFilter, setPurposeFilter] = useState<string>('all');
     const [activeTab, setActiveTab] = useState<QueueStatus | 'all'>('all');
+    const socket = useSocket();
 
     // Separate queries for each status
     const waitingQueues = useQueueList({
@@ -104,6 +114,74 @@ export function QueueTable() {
         search: debouncedSearchTerm,
         purpose: purposeFilter === 'all' ? undefined : purposeFilter,
     });
+
+    // Listen for new queue entries and status updates
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleNewQueueEntry = (data: NewQueueEntry) => {
+            // Show toast notification
+            toast.success(`A new ${data.purpose} appointment has been scheduled.`, {
+                duration: 5000,
+                position: 'top-right',
+            });
+
+            // Refetch all queue data
+            waitingQueues.refetch();
+            inProgressQueues.refetch();
+            completedQueues.refetch();
+            cancelledQueues.refetch();
+            allQueues.refetch();
+        };
+
+        const handleQueueStatusUpdate = (data: {
+            queueId: string;
+            userId: string;
+            status: QueueStatus;
+            name: string;
+            profile: string;
+            purpose: string;
+            timeSchedule: string;
+        }) => {
+            // Show toast notification
+            toast.custom((t) => (
+                <div
+                    className={`${
+                        t.visible ? 'animate-enter' : 'animate-leave'
+                    } max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}
+                >
+                    <div className="flex-1 w-0 p-4">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <img className="h-10 w-10 rounded-full" src={`${data.profile}`} alt="profile" />
+                            </div>
+                            <div className="ml-3 flex-1">
+                                <p className="mt-1 text-sm text-gray-500 text-capitalize">{`${data.name}`}</p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    {`has ${data.status} the appointment for ${data.purpose}`}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ));
+
+            // Refetch all queue data
+            waitingQueues.refetch();
+            inProgressQueues.refetch();
+            completedQueues.refetch();
+            cancelledQueues.refetch();
+            allQueues.refetch();
+        };
+
+        socket.on('newQueueEntry', handleNewQueueEntry);
+        socket.on('handleCancelQueue', handleQueueStatusUpdate);
+
+        return () => {
+            socket.off('newQueueEntry', handleNewQueueEntry);
+            socket.off('handleCancelQueue', handleQueueStatusUpdate);
+        };
+    }, [socket, waitingQueues, inProgressQueues, completedQueues, cancelledQueues, allQueues]);
 
     // Get the active query based on current tab
     const getActiveQuery = () => {

@@ -9,8 +9,14 @@ import { useActiveQueue } from '@/api/users/queries/get_active_queue.query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-    DialogTrigger
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 
 export default function ActiveAppointment() {
@@ -73,6 +79,8 @@ export default function ActiveAppointment() {
                                 className={`w-3 h-3 ${
                                     data?.data?.userQueue?.[0]?.status.toLowerCase() === 'waiting'
                                         ? 'bg-blue-500'
+                                        : data?.data?.userQueue?.[0]?.status.toLowerCase() === 'in-progress'
+                                        ? 'bg-yellow-500'
                                         : 'bg-teal-500'
                                 }  rounded-full mr-2 animate-pulse`}
                             ></div>

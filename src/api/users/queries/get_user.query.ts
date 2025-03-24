@@ -7,6 +7,9 @@ interface PassportSuccessResponse {
         name: string;
         email: string;
         role: string;
+        profile: string;
+        mobileNumber: string;
+        isVerified: boolean;
     };
 }
 
