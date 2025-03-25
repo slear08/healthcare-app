@@ -1,5 +1,6 @@
 import { Download, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface BeforeInstallPromptEvent extends Event {
     prompt: () => void;
@@ -7,6 +8,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 function InstallationPage() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleBeforeInstallPrompt = (event: BeforeInstallPromptEvent) => {
@@ -24,25 +26,28 @@ function InstallationPage() {
     const handleInstallClick = () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(() => {
+            deferredPrompt.userChoice.then((choiceResult) => {
                 setDeferredPrompt(null);
+                if (choiceResult.outcome === 'accepted') {
+                    navigate('/', { replace: true });
+                }
             });
         }
     };
 
     return (
-        <div className="flex min-h-screen flex-col">
+        <div className="flex h-screen flex-col justify-center items-center">
             <header className="w-full border-b bg-background/95 py-4">
-                <div className="container flex items-center justify-center">
+                <div className="container flex items-center justify-center md:justify-start px-5">
                     <div className="flex items-center gap-2">
                         <Shield className="h-8 w-8 text-teal-600" />
-                        <span className="text-2xl font-bold text-teal-600">Community HealthCare</span>
+                        <span className="text-2xl font-bold text-teal-600">Senior Check</span>
                     </div>
                 </div>
             </header>
 
             <main className="flex-1">
-                <section className="w-full py-12 bg-gradient-to-b from-teal-50 to-white text-center">
+                <section className="w-full h-full py-12 text-center flex justify-center items-center">
                     <div className="container px-4 max-w-4xl mx-auto">
                         <Shield className="h-16 w-16 text-teal-600 mx-auto" />
                         <h1 className="text-3xl font-bold text-teal-800">Download Our Healthcare App</h1>
