@@ -6,7 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAdminLogin } from '@/api/admin/mutations/login.mutation';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -103,12 +105,6 @@ export function LoginAdmin() {
                                     <FormItem>
                                         <div className="flex items-center justify-between">
                                             <FormLabel className="text-slate-700">Password</FormLabel>
-                                            <a
-                                                href="#"
-                                                className="text-sm font-medium text-teal-600 hover:text-teal-700"
-                                            >
-                                                Forgot password?
-                                            </a>
                                         </div>
                                         <div className="relative">
                                             <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -139,7 +135,6 @@ export function LoginAdmin() {
                                     </FormItem>
                                 )}
                             />
-
                             <Button
                                 type="submit"
                                 disabled={isPending}
@@ -150,6 +145,15 @@ export function LoginAdmin() {
                             >
                                 {isPending ? 'Signing in...' : 'Sign in'}
                             </Button>
+                            <div className="flex justify-end">
+                                <a
+                                    href="https://www.facebook.com/Aves.jhonel"
+                                    target="_blank"
+                                    className="text-sm font-medium text-teal-600 hover:text-teal-700"
+                                >
+                                    Contact the developer?
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </Form>
