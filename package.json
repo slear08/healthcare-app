@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc -b && vite build",
+        "build:production": "yarn install && tsc -b && vite build",
         "lint": "eslint .",
         "preview": "vite preview",
         "dev:preview": "tsc -b && vite build && vite preview --host",
