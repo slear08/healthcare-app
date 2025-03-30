@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const Axios = axios.create({
-    baseURL: 'http://localhost:5000',
+    baseURL: 'https://healthcare-server-pa9l.onrender.com',
     headers: {
         'Content-Type': 'application/json',
     },

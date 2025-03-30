@@ -9,7 +9,7 @@ export const useSocket = () => {
     useEffect(() => {
         if (!socketRef.current) {
             console.log('Initializing socket connection');
-            socketRef.current = io('http://localhost:5000', {
+            socketRef.current = io('https://healthcare-server-pa9l.onrender.com', {
                 withCredentials: true,
                 transports: ['websocket', 'polling'],
                 reconnection: true,

@@ -40,7 +40,7 @@ export async function setupNotifications() {
             }
 
             // Send subscription to server with the correct format
-            const response = await fetch('http://localhost:5000/api/notifications/subscribe', {
+            const response = await fetch('https://healthcare-server-pa9l.onrender.com/api/notifications/subscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

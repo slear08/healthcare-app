@@ -145,7 +145,7 @@ self.addEventListener('pushsubscriptionchange', async () => {
         });
 
         // Send the new subscription to the server
-        await fetch('http://localhost:5000/api/push/subscribe', {
+        await fetch('https://healthcare-server-pa9l.onrender.com/api/push/subscribe', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -263,7 +263,7 @@ self.addEventListener('sync', ((event: Event) => {
 // Function to sync medicine data
 async function syncMedicineData() {
     try {
-        const response = await fetch('http://localhost:5000/api/medicine-data');
+        const response = await fetch('https://healthcare-server-pa9l.onrender.com/api/medicine-data');
         const data = await response.json();
 
         const cache = await caches.open('medicine-data');
@@ -291,7 +291,7 @@ if ('periodicSync' in self.registration) {
 // Function to check medicine schedule
 async function checkMedicineSchedule() {
     try {
-        const response = await fetch('http://localhost:5000/api/medicine-schedule');
+        const response = await fetch('https://healthcare-server-pa9l.onrender.com/api/medicine-schedule');
         const schedule: MedicineSchedule[] = await response.json();
 
         // Check if any medicines are due

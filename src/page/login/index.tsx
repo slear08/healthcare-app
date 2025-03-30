@@ -21,7 +21,7 @@ export default function LoginPage() {
     }
 
     const handleLoginButton = () => {
-        window.open('http://localhost:5000/api/auth/google', '_self');
+        window.open('https://healthcare-server-pa9l.onrender.com/api/auth/google', '_self');
     };
 
     return (
