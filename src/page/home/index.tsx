@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+import { useLogout } from '@/api/global/logout.mutation';
 import { usePassportSuccess } from '@/api/users/queries/get_user.query';
 import { OfflineFallback } from '@/components/OfflineFallback';
 import QueueUpdates from '@/hooks/queueUpdates';
@@ -17,6 +18,7 @@ const HomePage = () => {
     const { user: authUser, isAuthenticated, login } = useAuthStore();
     const location = useLocation();
     const isOnline = useOnlineStatus();
+    const { mutate: logout } = useLogout();
 
     const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -31,6 +33,12 @@ const HomePage = () => {
             login(data.user.name, data.user.role as 'USER', data.user.profile, data.user.mobileNumber);
         }
     }, [data, login, isAuthenticated]);
+
+    useEffect(() => {
+        if (!data?.user || (isError && isAuthenticated)) {
+            logout();
+        }
+    }, [isOnline, data?.user, isAuthenticated, logout]);
 
     // Show offline fallback for authenticated users when offline
     if (!isOnline && isAuthenticated) {
