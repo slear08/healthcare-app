@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSocket } from '@/hooks/useSocket';
+import { useQueryClient } from '@tanstack/react-query';
 
 import QueueSettings from './queue_settings.component';
 
@@ -73,6 +74,7 @@ const getNextPossibleStatuses = (currentStatus: QueueStatus): QueueStatus[] => {
 
 export function QueueTable() {
     const updateQueueStatus = useUpdateQueueStatus();
+    const queryClient = useQueryClient();
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -127,6 +129,7 @@ export function QueueTable() {
             });
 
             // Refetch all queue data
+            queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
             waitingQueues.refetch();
             inProgressQueues.refetch();
             completedQueues.refetch();
@@ -167,6 +170,7 @@ export function QueueTable() {
             ));
 
             // Refetch all queue data
+            queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
             waitingQueues.refetch();
             inProgressQueues.refetch();
             completedQueues.refetch();
