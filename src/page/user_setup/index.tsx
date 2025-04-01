@@ -14,7 +14,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 const userSetupSchema = z.object({
     name: z.string().min(1, 'Name is required'),
-    mobileNumber: z.string().min(1, 'Mobile number is required').max(11, 'Invalid mobile number'),
+    mobileNumber: z
+        .string()
+        .min(1, 'Mobile number is required')
+        .refine((val) => {
+            const digits = val.replace(/\D/g, '');
+            return /^(\+63|09)\d{9}$/.test(val) || /^63\d{9}$/.test(digits) || /^\+63\d{10}$/.test(val);
+        }, 'Please enter a valid Philippine mobile number (+63 format)')
+        .transform((val) => {
+            const digits = val.replace(/\D/g, '');
+            if (digits.startsWith('09')) {
+                return '+63' + digits.slice(1);
+            } else if (digits.startsWith('63')) {
+                return '+' + digits;
+            }
+            return val;
+        }),
 });
 
 type UserSetupForm = z.infer<typeof userSetupSchema>;
@@ -112,10 +127,16 @@ export default function UserSetup() {
                                     <FormItem>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter mobile number"
-                                                type="number"
-                                                pattern="^(\+63|09)\d{9,10}$"
+                                                placeholder="Enter mobile number (+63 format)"
+                                                type="tel"
                                                 {...field}
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+                                                    // Allow only digits, +, and spaces
+                                                    if (/^[\d+\s]*$/.test(value)) {
+                                                        field.onChange(value);
+                                                    }
+                                                }}
                                             />
                                         </FormControl>
                                         <FormMessage />
