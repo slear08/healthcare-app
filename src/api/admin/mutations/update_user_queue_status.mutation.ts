@@ -34,6 +34,7 @@ export const useUpdateQueueStatus = () => {
         onSuccess: () => {
             // Invalidate and refetch the queue list
             queryClient.invalidateQueries({ queryKey: ['queue-list'] });
+            queryClient.invalidateQueries({ queryKey: ['dashboardData'] });
         },
     });
 };
