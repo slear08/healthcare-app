@@ -40,7 +40,7 @@ export function LoginAdmin() {
             await toast.promise(login(values), {
                 loading: 'Signing in...',
                 success: (data) => {
-                    navigate('/');
+                    navigate('/admin');
                     return `Welcome back, ${data.user.name}!`;
                 },
                 error: 'Invalid email or password',
