@@ -7,6 +7,7 @@ import ReminderPage from '@/page/reminder';
 import { RoleBasedRoute } from './components/auth/auth_route.component';
 import { OfflineFallback } from './components/OfflineFallback';
 import QueueUpdates from './hooks/queueUpdates';
+import AdminDashboardPage from './page/admin/dashboard';
 import { LoginAdmin } from './page/admin/login';
 import HomePage from './page/home';
 import InstallationPage from './page/installation';
@@ -31,6 +32,10 @@ function App() {
         {
             path: '/',
             element: <HomePage />,
+        },
+        {
+            path: '/admin',
+            element: <AdminDashboardPage />,
         },
         {
             path: '/installation',

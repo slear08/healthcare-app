@@ -6,9 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { useAdminLogin } from '@/api/admin/mutations/login.mutation';
 import { Button } from '@/components/ui/button';
-import {
-    Form, FormControl, FormField, FormItem, FormLabel, FormMessage
-} from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/auth';
@@ -26,7 +24,7 @@ export function LoginAdmin() {
 
     useEffect(() => {
         if (isAuthenticated && user) {
-            navigate('/', { replace: true });
+            navigate('/admin', { replace: true });
         }
     }, [isAuthenticated, user, navigate]);
 
